@@ -1,0 +1,185 @@
+@startuml
+skinparam defaultFontName Consolas
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+'hide attributes
+
+
+package javafx.* {
+    class Application
+    class Stage
+    class Scene {
+        Scene(Parent,\n  width: double,\n  height: double\n)
+    }
+    class BorderPane
+    class GridPane
+    class StackPane
+
+    Application -[hidden]-> Stage
+    Stage *-->  Scene
+    Scene -[hidden]- BorderPane
+    BorderPane -[hidden]- GridPane
+    GridPane -[hidden]- StackPane
+}
+package Sokoban {
+    class SokobanApp
+
+    Application <|-- SokobanApp
+}
+package Sokoban.ViewModel {
+
+class BoardViewModel{
+- gridViewModel
+- board
++ BoardViewModel(Board)
+}
+class CellViewModel {
++ CellViewModel(int line, int col, Board board)
+- line : int
+- col : int
+- Board
++ play() : void
++ isListChangedProperty() : BooleanProperty
++ removeElement() : void
+}
+class GridViewModel {
+- board
++ GridViewModel(Board board)
++ gridWidth() : int
++ gridHeight() : int
++ getCellViewModel(int line, int col)
+}
+}
+
+package Sokoban.View {
+class FileMenuView {
+    - boardViewModel: BoardViewModel
+    + FileMenuView(Stage , BoardViewModel)
+    + showNewGameDialog(stage: Stage): void
+}
+class BoardView {
+    - boardViewModel: BoardViewModel
+    - GRID_WIDTH: int
+    - GRID_HEIGHT: int
+    + BoardView(primaryStage: Stage, boardViewModel: BoardViewModel)
+}
+class GridView {
+    - board: Board
+    + GridView(gridViewModel: GridViewModel, gridWidth: DoubleBinding, gridHeight: DoubleBinding)
+    + gridWidth(): int
+    + gridHeight(): int
+    + getCellViewModel(line: int, col: int): CellViewModel
+}
+class CellView {
+    - CellViewModel viewModel
+    + CellView(cellViewModel: CellViewModel, cellWidthProperty: DoubleBinding)
+}
+
+}
+package Sokoban.Model {
+
+class Board {
+- ObjectProperty<Grid> grid
+-  MAX_FILLED_CELLS : IntegerBinding
+-  isFull : BooleanBinding
+-  isChanged : BooleanProperty
++ removeElement()
++ play ()
++ teleport()
++ isListChangedProperty ()
++ putElement ()
++ save ()
++ open ()
+}
+class Grid {
+-  gridColumns : IntegerProperty
+-  gridRows : IntegerProperty
+-   matrix : Cell[][]
+-  filledCellsCount : LongBinding
+-  gridChangedProperty : BooleanProperty
++ play()
++ save()
++ open ()
+}
+class Cell {
+-  value : ObjectProperty<TreeSet<Element>>
+- isListChanged : BooleanProperty
++ isEmpty() : bool
++ addElement() : void
++ getElement() : Element
++ removeElement() : void
++ getValue() : TreeSet<Element>
++  valueProperty() : ReadOnlyObjectProperty<TreeSet<Element>>
+}
+
+abstract class Element {
+    - type: ElementType
+    +  ElementType getType(): ElementType
+     {abstract} + ElementType getElement();
+}
+
+class Joueur {
+-  xPosition :IntegerProperty
+-  yPosition :IntegerProperty
++  setxPosition(x): void
++  setyPosition(y): void
++  getXPosition() : int
++  getYPosition() : int
++ ElementType getElement();
+}
+class Terrain {
++ ElementType getElement();
+}
+class Caisse {
++ ElementType getElement();
+}
+class Cible {
++ ElementType getElement();
+}
+class Mur {
++ ElementType getElement();
+}
+}
+SokobanApp ..> "1" Scene : <<create>>
+SokobanApp *-l-> "1" Stage
+Scene *--> "1" BoardView
+BorderPane <|-r- BoardView
+ BorderPane <|-r- FileMenuView
+GridPane <|-r- GridView
+StackPane <|-r- CellView
+
+SokobanApp ..> Board : <<create>>
+SokobanApp ..> BoardViewModel : <<create>>
+SokobanApp ..> BoardView : <<create>>
+
+
+
+
+
+BoardViewModel *--> GridViewModel
+BoardViewModel ..> GridViewModel : <<create>>
+BoardViewModel *--> Board
+BoardView *-- BoardViewModel
+CellViewModel *--> Board
+BoardView ..> GridView : <<create>>
+GridView ..> CellView : <<create>>
+GridView *- GridViewModel
+BoardViewModel --> FileMenuView
+GridViewModel *--> CellViewModel
+GridViewModel ..> CellViewModel : <<create>>
+GridViewModel *-->  Board
+CellView *- CellViewModel
+
+Grid *-->Cell
+Board *--> Grid
+
+Element <|-- Joueur
+Element <|-- Mur
+Element <|-- Terrain
+Element <|-- Caisse
+Element <|-- Cible
+
+}
+
+@enduml
